@@ -1,5 +1,6 @@
 #include "RBT.h"
 #include <iostream>
+#include <cmath>
 
 Node::Node(int value) {
 	this->data = value;
@@ -182,4 +183,19 @@ void RBT::printRedNodesCount() {
 	int count = 0;
 	countRedNodes(this->root, &count);
 	std::cout << std::endl << "Red nodes: " << count << std::endl;
+}
+
+void RBT::countNodes(Node * node, int * count) {
+	if (node != nullptr) {
+		countNodes(node->left, count);
+		(*count)++;
+		countNodes(node->right, count);
+	}
+}
+
+void RBT::printActualMaxAndMinDepth() {
+	int count = 0;
+	countNodes(root, &count);
+	std::cout << "Min depth: " << ceil(log2(count)) << std::endl;
+	std::cout << "Max depth: " << ceil(2*log2(count)) << std::endl;
 }

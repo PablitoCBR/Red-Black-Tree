@@ -25,9 +25,11 @@ protected:
 	Color getUncleColor(Node *);
 	void inOrder(Node *);
 	void countRedNodes(Node *, int *);
+	void countNodes(Node *, int *);
 public:
 	void add(int);
 	Node * search(int);
 	void printInOrder();
 	void printRedNodesCount();
+	void printActualMaxAndMinDepth();
 };
