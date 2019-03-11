@@ -78,6 +78,10 @@ void RBT::rotateRight(Node * node) {
 	parent->left = rightChild;
 }
 
+void RBT::fixAfterInsertIteration(Node * node) {
+	
+}
+
 void RBT::fixAfterInsert(Node * node) {
 	if (node == this->root)
 		return;
@@ -100,7 +104,7 @@ void RBT::fixAfterInsert(Node * node) {
 		}
 		else if (getSide(node) == LEFT && parentSide == RIGHT){
 			rotateRight(node);
-			fixAfterInsert(node->right);
+				(node->right);
 		}
 		else {
 			if (parentSide == LEFT) {
@@ -158,6 +162,32 @@ Node * RBT::search(int value) {
 	return nullptr;
 }
 
+Node * RBT::searchPro(int value) {
+	Node * ptr = this->root;
+	int blackDepth = 0, depth = 0;
+
+	while (ptr != nullptr) {
+
+		if (getColor(ptr) == BLACK)
+			blackDepth++;
+		if (ptr->data == value) {
+			std::cout << "Element with value " << value << ":" << std::endl;
+			std::cout << "Depth: " << depth << std::endl;
+			std::cout << "Black depth: " << blackDepth << std::endl;
+			std::cout << "Node color: ";
+			if (getColor(ptr) == BLACK)
+				std::cout << "BLACK" << std::endl;
+			else std::cout << "RED" << std::endl;
+			return ptr;
+		}
+		else if (value > ptr->data)
+			ptr = ptr->right;
+		else ptr = ptr->left;
+		depth++;
+	}
+	return nullptr;
+}
+
 void RBT::inOrder(Node * node) {
 	if (node != nullptr) {
 		inOrder(node->left);
@@ -197,5 +227,65 @@ void RBT::printActualMaxAndMinDepth() {
 	int count = 0;
 	countNodes(root, &count);
 	std::cout << "Min depth: " << ceil(log2(count)) << std::endl;
-	std::cout << "Max depth: " << ceil(2*log2(count)) << std::endl;
+	std::cout << "Max depth: " << floor(2*log2(count)) << std::endl;
 }
+
+Node * RBT::searchReplacement(Node * node) {
+	if (node->left == nullptr && node->right == nullptr)
+		return nullptr;
+
+	if (node->left != nullptr) {
+		node = node->left;
+		while (node->right != nullptr)
+			node = node->right;
+		return node;
+	}
+	else {
+		node = node->right;
+		while (node->left != nullptr)
+			node = node->left;
+		return node;
+	}
+}
+
+void RBT::fixAfterDeletion(Node * node) {
+
+}
+
+//void RBT::remove(int value) {
+//	Node * ptr = search(value);
+//	if (ptr == nullptr) {
+//		std::cout << "Element not found!" << std::endl;
+//		return;
+//	}
+//
+//	Side side = getSide(ptr);
+//	Color removedNodeColor = getColor(ptr);
+//	Node * replacement = searchReplacement(ptr);
+//
+//	// node with no sons
+//	if (replacement == nullptr) {
+//		// node is not root
+//		if (ptr != this->root) {
+//			if (side == LEFT)
+//				ptr->parent->left = nullptr;
+//			else ptr->parent->right = nullptr;
+//			free(ptr);
+//		}
+//		// node is root
+//		else {
+//			this->root = nullptr;
+//			free(ptr);
+//			return;
+//		}
+//	}
+//	// node with one son
+//	else if (ptr->right == nullptr ^ ptr->left == nullptr) {
+//
+//	}
+//
+//	if (removedNodeColor == RED)
+//		return;
+//	else fixAfterDeletion();
+//}
+//
