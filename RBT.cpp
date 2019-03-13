@@ -19,6 +19,8 @@ void RBT::setColor(Node * node, Color color) {
 }
 
 Side RBT::getSide(Node * node) {
+	if (node == this->root)
+		return ROOT;
 	if (node->parent->left == node)
 		return LEFT;
 	else return RIGHT;
@@ -46,7 +48,7 @@ void RBT::rotateLeft(Node * node) {
 
 	node->parent = grandparent;
 	node->left = parent;
-	
+
 	if (grandparent != nullptr) {
 		if (getSide(parent) == LEFT)
 			grandparent->left = node;
@@ -79,13 +81,45 @@ void RBT::rotateRight(Node * node) {
 }
 
 void RBT::fixAfterInsertIteration(Node * node) {
-	
+	while (node != root && getColor(node->parent) != BLACK) {
+		if (getUncleColor(node) == RED) {
+			setColor(node->parent, BLACK);
+			setColor(node->parent->parent, RED);
+			setColor(this->getUncle(node), BLACK);
+			node = node->parent->parent;
+		}
+		else {
+			Side parentSide = getSide(node->parent);
+
+			if (getSide(node) == RIGHT && parentSide == LEFT) {
+				rotateLeft(node);
+				node = node->left;
+			}
+			else if (getSide(node) == LEFT && parentSide == RIGHT) {
+				rotateRight(node);
+				(node->right);
+			}
+			else {
+				if (parentSide == LEFT) {
+					rotateRight(node->parent);
+					setColor(node->parent, BLACK);
+					setColor(node->parent->right, RED);
+				}
+				else {
+					rotateLeft(node->parent);
+					setColor(node->parent, BLACK);
+					setColor(node->parent->left, RED);
+				}
+			}
+		}
+		setColor(this->root, BLACK);
+	}
 }
 
 void RBT::fixAfterInsert(Node * node) {
 	if (node == this->root)
 		return;
-	
+
 	if (getColor(node->parent) == BLACK)
 		return;
 
@@ -102,9 +136,9 @@ void RBT::fixAfterInsert(Node * node) {
 			rotateLeft(node);
 			fixAfterInsert(node->left);
 		}
-		else if (getSide(node) == LEFT && parentSide == RIGHT){
+		else if (getSide(node) == LEFT && parentSide == RIGHT) {
 			rotateRight(node);
-				(node->right);
+			(node->right);
 		}
 		else {
 			if (parentSide == LEFT) {
@@ -116,7 +150,7 @@ void RBT::fixAfterInsert(Node * node) {
 				rotateLeft(node->parent);
 				setColor(node->parent, BLACK);
 				setColor(node->parent->left, RED);
-			}	
+			}
 		}
 	}
 	setColor(this->root, BLACK);
@@ -140,7 +174,7 @@ void RBT::add(int value) {
 	}
 
 	newNode->parent = parent;
-	
+
 	if (parent->data <= value)
 		parent->right = newNode;
 	else parent->left = newNode;
@@ -227,7 +261,7 @@ void RBT::printActualMaxAndMinDepth() {
 	int count = 0;
 	countNodes(root, &count);
 	std::cout << "Min depth: " << ceil(log2(count)) << std::endl;
-	std::cout << "Max depth: " << floor(2*log2(count)) << std::endl;
+	std::cout << "Max depth: " << floor(2 * log2(count)) << std::endl;
 }
 
 Node * RBT::searchReplacement(Node * node) {
@@ -249,43 +283,119 @@ Node * RBT::searchReplacement(Node * node) {
 }
 
 void RBT::fixAfterDeletion(Node * node) {
+	if (getColor(node) != DOUBLE_BLACK)
+		return;
 
+	Side side = getSide(node);
+	Node * brother;
+
+	if (side == RIGHT)
+		brother = node->parent->left;
+	else brother = node->parent->right;
+
+	if (getColor(brother) == RED) {
+		if (side == RIGHT)
+			rotateRight(brother);
+		else rotateLeft(brother);
+		setColor(brother, BLACK);
+		setColor(node->parent, RED);
+		setColor(node, BLACK);	
+		return;
+	}
+	else if (getColor(brother) == BLACK && getColor(brother) == BLACK) {
+		setColor(brother, RED);
+		setColor(node, BLACK);
+		fixAfterInsert(brother);
+	}
+	else if ((getColor(brother->left) == RED && side == LEFT) || (getColor(brother->right) == RED && side == RIGHT)) {
+		if (side == LEFT) 
+			rotateRight(brother->left);
+		else rotateLeft(brother->right);
+		setColor(brother, RED);
+		setColor(brother->parent, BLACK);
+		fixAfterDeletion(node);
+	}
+	else {
+		if (side == RIGHT) {
+			rotateRight(brother);
+			setColor(brother, getColor(brother->right));
+		}
+		else {
+			rotateLeft(brother);
+			setColor(brother, getColor(brother->left));
+		}
+		setColor(brother->left, BLACK);
+		setColor(brother->right, BLACK);
+	}
+
+	setColor(this->root, BLACK);
 }
 
-//void RBT::remove(int value) {
-//	Node * ptr = search(value);
-//	if (ptr == nullptr) {
-//		std::cout << "Element not found!" << std::endl;
-//		return;
-//	}
-//
-//	Side side = getSide(ptr);
-//	Color removedNodeColor = getColor(ptr);
-//	Node * replacement = searchReplacement(ptr);
-//
-//	// node with no sons
-//	if (replacement == nullptr) {
-//		// node is not root
-//		if (ptr != this->root) {
-//			if (side == LEFT)
-//				ptr->parent->left = nullptr;
-//			else ptr->parent->right = nullptr;
-//			free(ptr);
-//		}
-//		// node is root
-//		else {
-//			this->root = nullptr;
-//			free(ptr);
-//			return;
-//		}
-//	}
-//	// node with one son
-//	else if (ptr->right == nullptr ^ ptr->left == nullptr) {
-//
-//	}
-//
-//	if (removedNodeColor == RED)
-//		return;
-//	else fixAfterDeletion();
-//}
-//
+void RBT::remove(int value) {
+	Node * ptr = search(value);
+	if (ptr == nullptr) {
+		std::cout << "Element not found!" << std::endl;
+		return;
+	}
+
+	Side side = getSide(ptr);
+	Color removedNodeColor = getColor(ptr);
+	Node * replacement = searchReplacement(ptr);
+
+	// node with no sons
+	if (replacement == nullptr) {
+		// node is not root
+		if (side != ROOT) {
+			if (side == LEFT)
+				ptr->parent->left = nullptr;
+			else ptr->parent->right = nullptr;
+			delete(ptr);
+		}
+		// node is root
+		else {
+			this->root = nullptr;
+			delete(ptr);
+			return;
+		}
+	}
+	// node with one son
+	else if ((ptr->right == nullptr) ^ (ptr->left == nullptr)){
+		if (side == ROOT) {
+			root = replacement;
+			replacement->parent = nullptr;	
+			delete(ptr);
+		}
+		else {
+			if (side == LEFT)
+				ptr->parent->left = replacement;
+			else ptr->parent->right = replacement;
+			replacement->parent = ptr->parent;
+			delete(ptr);
+		}
+	}
+	// node with two sons
+	else {
+		replacement->right = ptr->right;
+		replacement->parent = ptr->parent;
+		if (side != ROOT) {
+			if (side == LEFT)
+				ptr->parent->left = replacement;
+			else ptr->parent->right = replacement;
+		}
+		delete(ptr);
+	}
+
+	// Check if need to repair after deletion
+	if (side == ROOT) {
+		setColor(this->root, BLACK);
+	}
+	else if (getColor(replacement) == RED) {
+		setColor(replacement, BLACK);
+		return;
+	}
+	else  if (removedNodeColor != RED){
+		setColor(replacement, DOUBLE_BLACK);
+		fixAfterDeletion(replacement);
+	}
+}
+

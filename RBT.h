@@ -1,7 +1,7 @@
 #pragma once
 
-enum Color {RED, BLACK};
-enum Side {LEFT, RIGHT};
+enum Color { RED, BLACK, DOUBLE_BLACK };
+enum Side { LEFT, RIGHT, ROOT };
 
 struct Node {
 	int data;
